@@ -6,19 +6,55 @@ public class Jugador : MonoBehaviour
     public int limiteX = 23; // Límite en el eje X para el jugador
     public float velocidadPaddle = 45f; // Velocidad de movimiento del jugador
 
+    private Vector2 mousePosAnterior; // Posición anterior del mouse para detectar el movimiento
 
-    Vector3 mousePos2D;
-    Vector3 mousePos3D;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        // Inicializa la posición anterior del mouse
+        mousePosAnterior = Mouse.current.position.ReadValue();
     }
 
     // Update is called once per frame
     void Update()
     {
+        Vector3 pos = this.transform.position;
+
+        // Leer el movimiento del control/teclado
+        float movimiento = Input.GetAxis("Horizontal");
+
+        // Leer la posición actual del mouse
+        Vector2 mousePosActual = Mouse.current.position.ReadValue();
+
+        // Detectar si el mouse se movió
+        bool mouseMovido = (mousePosActual != mousePosAnterior);
+
+        if (Mathf.Abs(movimiento) > 0.01f)
+        {
+            // Si hay movimiento de control/teclado, mover el paddle
+            pos.x += movimiento * velocidadPaddle * Time.deltaTime;
+        }
+        else if (mouseMovido)
+        {
+            // Si el mouse se movió, seguir la posición del mouse
+            Vector3 mousePos3D = Camera.main.ScreenToWorldPoint(new Vector3(mousePosActual.x, mousePosActual.y, -Camera.main.transform.position.z));
+            pos.x = mousePos3D.x;
+        }
+
+        // Limitar la posición X
+        pos.x = Mathf.Clamp(pos.x, -limiteX, limiteX);
+        this.transform.position = pos;
+
+        // Guardar la posición del mouse para el siguiente frame
+        mousePosAnterior = mousePosActual;
+    }
+
+    void PlayerControllerOLD()
+    {
+        Vector3 mousePos2D;
+        Vector3 mousePos3D;
+
         //mousePos2D = Input.mousePosition; //Input Manager Legacy
 
         float movimientoTeclado = 0f; // Inicializar el movimiento del teclado en 0
